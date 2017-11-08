@@ -1,0 +1,73 @@
+/**This code is to be used on the Arduino platform.
+*Goal: A device to alert individuals when surrounding temperatures become high. A temperature sensor regularly senses the temperature. 
+*Import setup and code from libraries so that temperature sensor and serial monitor can be used.
+*/
+#include "DHT.h"
+#define DHTPIN 2     
+#define DHTTYPE DHT11   
+DHT dht(DHTPIN, DHTTYPE);
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x3f,16,2);
+
+/** Set up the serial monitor and the LEDs. 
+*/
+void setup() {
+  Serial.begin(9600);
+  Serial.println("DHTxx test!");
+  dht.begin();
+  lcd.init();                      
+  lcd.backlight();
+  pinMode(4, OUTPUT);
+}
+
+/**create variables for the humidity and temperature, for the temperature sensor to read (analog input) and output in digital form by printing the values on the computer serial monitor.
+*/
+void loop() {
+  delay(2000); 
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  float f = dht.readTemperature(true);
+  if (isnan(h) || isnan(t) || isnan(f)) {
+	Serial.println("Failed to read from DHT sensor!");
+	return;
+  } 
+  float hif = dht.computeHeatIndex(f,h);
+  float hic = dht.computeHeatIndex(t, h, false);
+  Serial.println(f);
+  Serial.print(" *F\t");
+/** If statement - If the temperature is safe (below 85.50*C), a green LED will be lit and the serial monitor will state that the temperature is safe. If temperatures reach 85.50*C or greater, a red LED will light up, and an alert message will be posted on the serial monitor.
+ if (f>85.50){
+	lcd.backlight();
+	lcd.setCursor(0,0);
+	lcd.println("HEAT ALERT");
+	digitalWrite(4, HIGH);
+  }
+  else {
+	lcd.setCursor(0,0);
+	lcd.println("SAFE TO GO");
+	digitalWrite(4,LOW);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
